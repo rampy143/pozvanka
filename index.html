@@ -96,6 +96,12 @@ h1 em{font-style:italic; color:var(--coral);}
 .place.sel{border-color:var(--coral); background:rgba(255,138,122,.16);}
 .place .em{font-size:1.9rem; display:block; margin-bottom:6px;}
 .place .nm{font-weight:700; font-size:.98rem;}
+.other-input{
+  width:100%; margin-top:12px; box-sizing:border-box; font-family:inherit; font-size:1rem;
+  color:var(--cream); background:var(--card); border:1.5px solid var(--coral); border-radius:14px;
+  padding:14px 16px; outline:none;
+}
+.other-input::placeholder{color:var(--muted);}
 
 .next{
   display:block; width:100%; margin-top:26px; font-family:'Nunito',sans-serif; font-weight:800;
@@ -186,6 +192,7 @@ const CONFIG = {
     <h1>A <em>kam</em> to bude?</h1>
     <p class="sub">Klidně vyber, na co máš zrovna chuť.</p>
     <div class="grid-places" id="places"></div>
+    <input type="text" id="otherInput" class="other-input" placeholder="Napiš, kam bys chtěla jít…" maxlength="60" style="display:none;">
     <button class="next" id="finish" disabled>Hotovo 💌</button>
     <button class="back" id="backToDays">← zpět na výběr dne</button>
   </section>
@@ -195,7 +202,6 @@ const CONFIG = {
     <div class="heart-big">💛</div>
     <h1 style="margin-top:10px;">Těším se na <em>tebe</em></h1>
     <div class="ticket" id="ticket"></div>
-    <p class="msg" id="finalMsg"></p>
     <p class="sign">— Zbyněk</p>
     <button class="copy-btn" id="copyBtn">Zkopírovat výběr</button>
     <p class="status" id="status"></p>
@@ -223,6 +229,7 @@ const places = [
   {label:'Vietnamská', em:'🍜'},
   {label:'Burger', em:'🍔'},
   {label:'Italská restaurace', em:'🍝'},
+  {label:'Jiné', em:'✨', other:true},
 ];
 const choice = {day:null, time:null, place:null};
 
@@ -329,6 +336,7 @@ toPlaces.addEventListener('click', ()=> goTo('s3'));
 /* ---------- STEP 3: places ---------- */
 const placesEl = document.getElementById('places');
 const finishBtn = document.getElementById('finish');
+const otherInput = document.getElementById('otherInput');
 places.forEach(p=>{
   const b = document.createElement('button');
   b.className='place';
@@ -336,10 +344,23 @@ places.forEach(p=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.place').forEach(x=>x.classList.remove('sel'));
     b.classList.add('sel');
-    choice.place = p.label;
-    finishBtn.disabled = false;
+    if(p.other){
+      otherInput.style.display = 'block';
+      otherInput.value = '';
+      choice.place = '';
+      finishBtn.disabled = true;
+      otherInput.focus();
+    } else {
+      otherInput.style.display = 'none';
+      choice.place = p.label;
+      finishBtn.disabled = false;
+    }
   });
   placesEl.appendChild(b);
+});
+otherInput.addEventListener('input', ()=>{
+  choice.place = otherInput.value.trim();
+  finishBtn.disabled = choice.place.length === 0;
 });
 document.getElementById('backToDays').addEventListener('click', ()=> goTo('s2'));
 finishBtn.addEventListener('click', finish);
@@ -350,8 +371,6 @@ function finish(){
     <div class="row"><span class="k">Kdy</span><span class="v">${choice.day}</span></div>
     <div class="row"><span class="k">V kolik</span><span class="v">${choice.time}</span></div>
     <div class="row"><span class="k">Kam</span><span class="v">${choice.place}</span></div>`;
-  document.getElementById('finalMsg').textContent =
-    'Udělala jsi mi obrovskou radost. Budu počítat dny do té doby — a slibuju, že to bude pěkné. 💛';
   goTo('s4');
   burst();
   sendChoice();
