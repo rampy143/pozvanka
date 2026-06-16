@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pozvánka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#2a1721; --bg2:#3d2233; --bg3:#52283f;
+  --coral:#ff8a7a; --coral-deep:#f26a59;
+  --gold:#f6c987; --cream:#fdeee4; --muted:#d8b6bf;
+  --card:rgba(255,255,255,0.06); --line:rgba(253,238,228,0.16);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;}
+body{
+  font-family:'Nunito',-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--cream);
+  background:radial-gradient(120% 120% at 50% 0%, var(--bg3) 0%, var(--bg2) 45%, var(--bg1) 100%) fixed;
+  min-height:100dvh; overflow-x:hidden;
+  display:flex; flex-direction:column; align-items:center;
+  padding:28px 20px 48px; position:relative;
+}
+/* ambient hearts */
+.amb{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;}
+.amb span{position:absolute; bottom:-40px; font-size:18px; opacity:.0; animation:rise linear infinite;}
+@keyframes rise{
+  0%{transform:translateY(0) scale(.6) rotate(0); opacity:0;}
+  15%{opacity:.35;}
+  100%{transform:translateY(-115vh) scale(1.1) rotate(40deg); opacity:0;}
+}
+.wrap{position:relative; z-index:1; width:100%; max-width:440px; margin:auto;}
+.step{display:none; animation:fade .5s ease both;}
+.step.active{display:block;}
+@keyframes fade{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+
+.eyebrow{font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold);
+  font-weight:700; text-align:center; margin:0 0 14px;}
+h1{font-family:'Fraunces',Georgia,serif; font-weight:600; line-height:1.08;
+  font-size:clamp(2.1rem,9vw,2.9rem); text-align:center; margin:0 0 10px;}
+h1 em{font-style:italic; color:var(--coral);}
+.sub{text-align:center; color:var(--muted); font-size:1.02rem; margin:0 auto 26px; max-width:340px; line-height:1.5;}
+
+/* step 1 buttons */
+.q-area{display:flex; flex-direction:column; align-items:center; gap:16px; margin-top:18px; min-height:160px;}
+.btn-yes{
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:1.25rem; color:#3a1320;
+  background:linear-gradient(135deg,var(--gold),var(--coral)); border:none; border-radius:999px;
+  padding:18px 46px; cursor:pointer; box-shadow:0 10px 30px rgba(242,106,89,.35);
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1); transform-origin:center;
+}
+.btn-yes:active{transform:scale(.96);}
+.btn-no{
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:1rem; color:var(--cream);
+  background:transparent; border:1.5px solid var(--line); border-radius:999px;
+  padding:13px 30px; cursor:pointer; transition:left .35s ease, top .35s ease, transform .35s ease, opacity .35s ease;
+}
+.btn-no.loose{position:fixed; z-index:5;}
+
+/* day cards */
+.grid-days{display:grid; grid-template-columns:repeat(2,1fr); gap:11px; margin-top:6px;}
+.day{
+  background:var(--card); border:1.5px solid var(--line); border-radius:18px;
+  padding:15px 12px; text-align:left; cursor:pointer; color:var(--cream);
+  transition:border-color .2s, background .2s, transform .12s; font-family:inherit;
+}
+.day:active{transform:scale(.97);}
+.day.sel{border-color:var(--coral); background:rgba(255,138,122,.14);}
+.day .dow{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600;}
+.day .dt{color:var(--muted); font-size:.92rem; margin-top:2px;}
+.day .hrs{color:var(--gold); font-size:.74rem; margin-top:7px; font-weight:700; letter-spacing:.04em;}
+
+/* time + place chips */
+.panel{margin-top:22px;}
+.panel-label{font-family:'Fraunces',serif; font-size:1.15rem; margin:0 0 12px; text-align:center;}
+.chips{display:flex; flex-wrap:wrap; gap:9px; justify-content:center;}
+.chip{
+  background:var(--card); border:1.5px solid var(--line); border-radius:999px;
+  padding:11px 17px; cursor:pointer; color:var(--cream); font-family:inherit;
+  font-weight:700; font-size:1rem; transition:all .15s;
+}
+.chip:active{transform:scale(.95);}
+.chip.sel{border-color:var(--coral); background:rgba(255,138,122,.16); color:#fff;}
+
+/* places */
+.grid-places{display:grid; grid-template-columns:repeat(2,1fr); gap:11px; margin-top:6px;}
+.place{
+  background:var(--card); border:1.5px solid var(--line); border-radius:18px;
+  padding:18px 12px; text-align:center; cursor:pointer; color:var(--cream); font-family:inherit;
+  transition:all .15s;
+}
+.place:active{transform:scale(.96);}
+.place.sel{border-color:var(--coral); background:rgba(255,138,122,.16);}
+.place .em{font-size:1.9rem; display:block; margin-bottom:6px;}
+.place .nm{font-weight:700; font-size:.98rem;}
+
+.next{
+  display:block; width:100%; margin-top:26px; font-family:'Nunito',sans-serif; font-weight:800;
+  font-size:1.1rem; color:#3a1320; background:linear-gradient(135deg,var(--gold),var(--coral));
+  border:none; border-radius:999px; padding:16px; cursor:pointer; box-shadow:0 10px 28px rgba(242,106,89,.3);
+  transition:opacity .2s, transform .15s;
+}
+.next:disabled{opacity:.35; cursor:not-allowed; box-shadow:none;}
+.next:active:not(:disabled){transform:scale(.98);}
+
+.back{display:block; margin:16px auto 0; background:none; border:none; color:var(--muted);
+  font-family:inherit; font-size:.92rem; cursor:pointer; text-decoration:underline;}
+
+/* final */
+.heart-big{font-size:3.4rem; text-align:center; animation:beat 1.3s ease-in-out infinite;}
+@keyframes beat{0%,100%{transform:scale(1);}25%{transform:scale(1.18);}40%{transform:scale(1);}}
+.ticket{
+  background:linear-gradient(135deg, rgba(246,201,135,.14), rgba(255,138,122,.12));
+  border:1.5px dashed var(--gold); border-radius:20px; padding:22px; margin:24px 0; text-align:center;
+}
+.ticket .row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--line);}
+.ticket .row:last-child{border-bottom:none;}
+.ticket .k{color:var(--muted); font-size:.9rem;}
+.ticket .v{font-family:'Fraunces',serif; font-weight:600; font-size:1.12rem; color:var(--cream);}
+.msg{text-align:center; color:var(--cream); line-height:1.6; font-size:1.05rem; margin:6px 0 0;}
+.sign{font-family:'Fraunces',serif; font-style:italic; font-size:1.3rem; color:var(--coral); text-align:center; margin-top:14px;}
+.copy-btn{display:block; margin:22px auto 0; background:transparent; border:1.5px solid var(--line);
+  color:var(--cream); border-radius:999px; padding:11px 24px; font-family:inherit; font-weight:700; cursor:pointer;}
+.status{text-align:center; color:var(--muted); font-size:.84rem; margin-top:14px; min-height:18px;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================================================================
+     NASTAVENÍ ODESLÁNÍ — vyber JEDNU možnost a vyplň ji.
+     -------------------------------------------------------------------
+     MOŽNOST A) GOOGLE APPS SCRIPT:
+        DELIVERY = 'appsscript'  a do APPSSCRIPT_URL vlož svou Web app URL.
+     MOŽNOST B) WEB3FORMS:
+        DELIVERY = 'web3forms'   a do WEB3FORMS_KEY vlož svůj access key.
+     Pokud necháš 'none', odeslání se přeskočí (jen shrnutí na obrazovce).
+==================================================================== -->
+<script>
+const CONFIG = {
+  DELIVERY: 'formsubmit',           // 'formsubmit' | 'appsscript' | 'web3forms' | 'none'
+  EMAIL: 'rampy5541@gmail.com',     // kam má dorazit výběr (FormSubmit)
+  APPSSCRIPT_URL: '',               // sem vlož URL z Apps Scriptu
+  WEB3FORMS_KEY: '',                // sem vlož access key z Web3Forms
+  FROM_NAME: 'Nikola',
+  TO_NAME: 'Zbyněk'
+};
+</script>
+
+<div class="amb" id="amb" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <!-- STEP 1 -->
+  <section class="step active" id="s1">
+    <p class="eyebrow">Mám na tebe otázku</p>
+    <h1>Půjdeš&nbsp;se mnou na <em>rande?</em></h1>
+    <div class="q-area" id="qArea">
+      <button class="btn-yes" id="btnYes">Ano 💛</button>
+      <button class="btn-no" id="btnNo">Ne</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" id="s2">
+    <p class="eyebrow">Skvělé rozhodnutí 🎉</p>
+    <h1>Kdy se ti to <em>hodí?</em></h1>
+    <p class="sub">Vyber si den, co ti sedne nejvíc.</p>
+    <div class="grid-days" id="days"></div>
+    <div class="panel" id="timePanel" style="display:none;">
+      <p class="panel-label">A v kolik?</p>
+      <div class="chips" id="times"></div>
+    </div>
+    <button class="next" id="toPlaces" disabled>Pokračovat</button>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step" id="s3">
+    <p class="eyebrow">Už zbývá jen jedno</p>
+    <h1>A <em>kam</em> to bude?</h1>
+    <p class="sub">Klidně vyber, na co máš zrovna chuť.</p>
+    <div class="grid-places" id="places"></div>
+    <button class="next" id="finish" disabled>Hotovo 💌</button>
+    <button class="back" id="backToDays">← zpět na výběr dne</button>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step" id="s4">
+    <div class="heart-big">💛</div>
+    <h1 style="margin-top:10px;">Těším se na <em>tebe</em></h1>
+    <div class="ticket" id="ticket"></div>
+    <p class="msg" id="finalMsg"></p>
+    <p class="sign">— Zbyněk</p>
+    <button class="copy-btn" id="copyBtn">Zkopírovat výběr</button>
+    <p class="status" id="status"></p>
+  </section>
+
+</div>
+
+<script>
+/* ---------- data ---------- */
+const days = [
+  {key:'Neděle 21. 6.', dow:'Neděle', dt:'21. 6.', weekend:true},
+  {key:'Pondělí 22. 6.', dow:'Pondělí', dt:'22. 6.', weekend:false},
+  {key:'Úterý 23. 6.',  dow:'Úterý',  dt:'23. 6.', weekend:false},
+  {key:'Středa 24. 6.', dow:'Středa', dt:'24. 6.', weekend:false},
+  {key:'Čtvrtek 25. 6.',dow:'Čtvrtek',dt:'25. 6.', weekend:false},
+  {key:'Pátek 26. 6.',  dow:'Pátek',  dt:'26. 6.', weekend:false},
+  {key:'Sobota 27. 6.', dow:'Sobota', dt:'27. 6.', weekend:true},
+  {key:'Neděle 28. 6.', dow:'Neděle', dt:'28. 6.', weekend:true},
+];
+const places = [
+  {label:'Kafe', em:'☕'},
+  {label:'Víno / pivo', em:'🍷'},
+  {label:'Sushi', em:'🍣'},
+  {label:'Pizza', em:'🍕'},
+  {label:'Vietnamská', em:'🍜'},
+  {label:'Burger', em:'🍔'},
+  {label:'Italská restaurace', em:'🍝'},
+];
+const choice = {day:null, time:null, place:null};
+
+/* ---------- ambient hearts ---------- */
+(function(){
+  const amb = document.getElementById('amb');
+  const icons = ['💛','🤍','💌','✨','🌙'];
+  for(let i=0;i<14;i++){
+    const s = document.createElement('span');
+    s.textContent = icons[Math.floor(Math.random()*icons.length)];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = (12 + Math.random()*16) + 'px';
+    s.style.animationDuration = (9 + Math.random()*9) + 's';
+    s.style.animationDelay = (-Math.random()*12) + 's';
+    amb.appendChild(s);
+  }
+})();
+
+/* ---------- step nav ---------- */
+function goTo(id){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- STEP 1: runaway "Ne" ---------- */
+const btnNo = document.getElementById('btnNo');
+const btnYes = document.getElementById('btnYes');
+let dodgeCount = 0;
+const noScales = [0.7, 0.45];   // zmenšení Ne při 1. a 2. pokusu
+const yesScales = [1.25, 1.55, 1.9]; // zvětšení Ano
+
+function dodge(e){
+  if(e){ e.preventDefault(); }
+  if(dodgeCount >= 3) return;
+
+  // Ano se vždy zvětší
+  btnYes.style.transform = 'scale(' + yesScales[Math.min(dodgeCount, yesScales.length-1)] + ')';
+  dodgeCount++;
+
+  if(dodgeCount >= 3){
+    // po třetím pokusu Ne zmizí — zůstane jen otázka a velké Ano
+    btnNo.style.transform = 'scale(0)';
+    btnNo.style.opacity = '0';
+    setTimeout(()=>{ btnNo.remove(); }, 350);
+    return;
+  }
+
+  // jinak uteč na náhodné místo a zmenši se
+  btnNo.classList.add('loose');
+  const bw = btnNo.offsetWidth, bh = btnNo.offsetHeight;
+  const maxX = Math.max(8, window.innerWidth  - bw - 16);
+  const maxY = Math.max(8, window.innerHeight - bh - 16);
+  btnNo.style.left = (Math.random()*maxX) + 'px';
+  btnNo.style.top  = (Math.random()*maxY) + 'px';
+  btnNo.style.transform = 'scale(' + noScales[dodgeCount-1] + ')';
+}
+btnNo.addEventListener('mouseenter', dodge);
+btnNo.addEventListener('touchstart', dodge, {passive:false});
+btnNo.addEventListener('click', dodge);
+
+btnYes.addEventListener('click', ()=>{ goTo('s2'); });
+
+/* ---------- STEP 2: days + times ---------- */
+const daysEl = document.getElementById('days');
+const timesEl = document.getElementById('times');
+const timePanel = document.getElementById('timePanel');
+const toPlaces = document.getElementById('toPlaces');
+
+days.forEach(d=>{
+  const b = document.createElement('button');
+  b.className = 'day';
+  b.innerHTML = `<div class="dow">${d.dow}</div><div class="dt">${d.dt}</div>
+                 <div class="hrs">${d.weekend? '9:00 – 21:00':'16:00 – 21:00'}</div>`;
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.day').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    choice.day = d.key; choice.time = null;
+    renderTimes(d.weekend);
+    timePanel.style.display='block';
+    toPlaces.disabled = true;
+    timePanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+  daysEl.appendChild(b);
+});
+
+function renderTimes(weekend){
+  timesEl.innerHTML='';
+  const start = weekend? 9 : 16, end = 21;
+  for(let h=start; h<=end; h++){
+    const c = document.createElement('button');
+    c.className='chip'; c.textContent = h+':00';
+    c.addEventListener('click', ()=>{
+      document.querySelectorAll('#times .chip').forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');
+      choice.time = h+':00';
+      toPlaces.disabled = false;
+    });
+    timesEl.appendChild(c);
+  }
+}
+toPlaces.addEventListener('click', ()=> goTo('s3'));
+
+/* ---------- STEP 3: places ---------- */
+const placesEl = document.getElementById('places');
+const finishBtn = document.getElementById('finish');
+places.forEach(p=>{
+  const b = document.createElement('button');
+  b.className='place';
+  b.innerHTML = `<span class="em">${p.em}</span><span class="nm">${p.label}</span>`;
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.place').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    choice.place = p.label;
+    finishBtn.disabled = false;
+  });
+  placesEl.appendChild(b);
+});
+document.getElementById('backToDays').addEventListener('click', ()=> goTo('s2'));
+finishBtn.addEventListener('click', finish);
+
+/* ---------- STEP 4: summary + send ---------- */
+function finish(){
+  document.getElementById('ticket').innerHTML = `
+    <div class="row"><span class="k">Kdy</span><span class="v">${choice.day}</span></div>
+    <div class="row"><span class="k">V kolik</span><span class="v">${choice.time}</span></div>
+    <div class="row"><span class="k">Kam</span><span class="v">${choice.place}</span></div>`;
+  document.getElementById('finalMsg').textContent =
+    'Udělala jsi mi obrovskou radost. Budu počítat dny do té doby — a slibuju, že to bude pěkné. 💛';
+  goTo('s4');
+  burst();
+  sendChoice();
+}
+
+function summaryText(){
+  return `Nikola řekla ANO! 🎉\nKdy: ${choice.day}\nV kolik: ${choice.time}\nKam: ${choice.place}`;
+}
+
+async function sendChoice(){
+  const status = document.getElementById('status');
+  try{
+    if(CONFIG.DELIVERY === 'formsubmit' && CONFIG.EMAIL){
+      await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(CONFIG.EMAIL),{
+        method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
+        body: JSON.stringify({
+          _subject: 'Nikola řekla ANO 💛',
+          _template: 'box',
+          Kdy: choice.day, V_kolik: choice.time, Kam: choice.place,
+          message: summaryText()
+        })
+      });
+      status.textContent = 'Odesláno ✓';
+    } else if(CONFIG.DELIVERY === 'web3forms' && CONFIG.WEB3FORMS_KEY){
+      await fetch('https://api.web3forms.com/submit',{
+        method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
+        body: JSON.stringify({
+          access_key: CONFIG.WEB3FORMS_KEY,
+          subject: 'Nikola řekla ANO 💛',
+          from_name: CONFIG.FROM_NAME,
+          den: choice.day, cas: choice.time, kam: choice.place,
+          message: summaryText()
+        })
+      });
+      status.textContent = 'Odesláno ✓';
+    } else if(CONFIG.DELIVERY === 'appsscript' && CONFIG.APPSSCRIPT_URL){
+      const fd = new FormData();
+      fd.append('den', choice.day); fd.append('cas', choice.time); fd.append('kam', choice.place);
+      fd.append('message', summaryText());
+      await fetch(CONFIG.APPSSCRIPT_URL, {method:'POST', mode:'no-cors', body:fd});
+      status.textContent = 'Odesláno ✓';
+    } else {
+      status.textContent = '';
+    }
+  }catch(err){
+    status.textContent = 'Odeslání se nepovedlo — klidně použij tlačítko Zkopírovat výběr.';
+  }
+}
+
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  const t = summaryText();
+  try{ await navigator.clipboard.writeText(t); document.getElementById('status').textContent='Zkopírováno do schránky ✓'; }
+  catch(e){ document.getElementById('status').textContent = t; }
+});
+
+/* ---------- final heart burst ---------- */
+function burst(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const icons=['💛','🤍','✨','💌'];
+  for(let i=0;i<24;i++){
+    const s=document.createElement('span');
+    s.textContent=icons[Math.floor(Math.random()*icons.length)];
+    s.style.cssText=`position:fixed;left:50%;top:30%;font-size:${14+Math.random()*16}px;z-index:9;pointer-events:none;`;
+    document.body.appendChild(s);
+    const ang=Math.random()*Math.PI*2, dist=120+Math.random()*180;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist - 60;
+    s.animate([
+      {transform:'translate(-50%,-50%) scale(.4)', opacity:1},
+      {transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.1)`, opacity:0}
+    ],{duration:1100+Math.random()*600, easing:'cubic-bezier(.2,.7,.3,1)'});
+    setTimeout(()=>s.remove(), 1800);
+  }
+}
+</script>
+</body>
+</html>
