@@ -182,7 +182,7 @@ const CONFIG = {
     <p class="eyebrow">Mám na tebe otázku</p>
     <h1>Půjdeš&nbsp;se mnou na <em>rande?</em></h1>
     <div class="q-area" id="qArea">
-      <button class="btn-yes" id="btnYes">Ano 🩷</button>
+      <button class="btn-yes" id="btnYes">Ano 💗</button>
       <button class="btn-no" id="btnNo">Ne</button>
     </div>
   </section>
@@ -223,7 +223,7 @@ const CONFIG = {
 
   <!-- STEP 4 -->
   <section class="step" id="s4">
-    <div class="heart-big">🩷</div>
+    <div class="heart-big">💗</div>
     <h1 style="margin-top:10px;">Těším se na <em>tebe</em></h1>
     <div class="ticket" id="ticket"></div>
     <button class="cal-btn" id="calBtn">📅 Přidat do kalendáře</button>
@@ -258,7 +258,7 @@ const choice = {day:null, time:null, place:null, note:'', iso:null};
 /* ---------- ambient hearts ---------- */
 (function(){
   const amb = document.getElementById('amb');
-  const icons = ['🩷','🤍','🌹','🌷','💌','✨'];
+  const icons = ['💗','🤍','🌹','🌷','💌','✨'];
   for(let i=0;i<14;i++){
     const s = document.createElement('span');
     s.textContent = icons[Math.floor(Math.random()*icons.length)];
@@ -420,7 +420,7 @@ async function sendChoice(){
       await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(CONFIG.EMAIL),{
         method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
         body: JSON.stringify({
-          _subject: 'Nikola řekla ANO 🩷',
+          _subject: 'Nikola řekla ANO 💗',
           _template: 'box',
           Kdy: choice.day, V_kolik: choice.time, Kam: choice.place,
           Vzkaz: choice.note || '(žádný)',
@@ -432,7 +432,7 @@ async function sendChoice(){
         method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
         body: JSON.stringify({
           access_key: CONFIG.WEB3FORMS_KEY,
-          subject: 'Nikola řekla ANO 🩷',
+          subject: 'Nikola řekla ANO 💗',
           from_name: CONFIG.FROM_NAME,
           den: choice.day, cas: choice.time, kam: choice.place,
           message: summaryText()
@@ -486,7 +486,7 @@ document.getElementById('calBtn').addEventListener('click', ()=>{
 /* ---------- final heart burst ---------- */
 function burst(){
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const icons=['🩷','🤍','🌹','🌷','✨','💌'];
+  const icons=['💗','🤍','🌹','🌷','✨','💌'];
   for(let i=0;i<24;i++){
     const s=document.createElement('span');
     s.textContent=icons[Math.floor(Math.random()*icons.length)];
