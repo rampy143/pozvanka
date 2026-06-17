@@ -45,12 +45,12 @@ h1 em{font-style:italic; color:var(--coral);}
 .sub{text-align:center; color:var(--muted); font-size:1.02rem; margin:0 auto 26px; max-width:340px; line-height:1.5;}
 
 /* step 1 buttons */
-.q-area{display:flex; flex-direction:column; align-items:center; gap:16px; margin-top:18px; min-height:160px;}
+.q-area{display:flex; flex-direction:column; align-items:center; gap:16px; margin-top:34px; min-height:340px;}
 .btn-yes{
   font-family:'Nunito',sans-serif; font-weight:800; font-size:1.25rem; color:#3a1320;
   background:linear-gradient(135deg,var(--gold),var(--coral)); border:none; border-radius:999px;
-  padding:18px 46px; cursor:pointer; box-shadow:0 10px 30px rgba(242,106,89,.35);
-  transition:transform .25s cubic-bezier(.34,1.56,.64,1); transform-origin:center;
+  padding:18px 30px; cursor:pointer; box-shadow:0 10px 30px rgba(242,106,89,.35);
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1); transform-origin:center top;
 }
 .btn-yes:active{transform:scale(.96);}
 .btn-no{
@@ -94,6 +94,7 @@ h1 em{font-style:italic; color:var(--coral);}
 }
 .place:active{transform:scale(.96);}
 .place.sel{border-color:var(--coral); background:rgba(255,138,122,.16);}
+.place.wide{grid-column:1 / -1;}
 .place .em{font-size:1.9rem; display:block; margin-bottom:6px;}
 .place .nm{font-weight:700; font-size:.98rem;}
 .other-input{
@@ -102,6 +103,19 @@ h1 em{font-style:italic; color:var(--coral);}
   padding:14px 16px; outline:none;
 }
 .other-input::placeholder{color:var(--muted);}
+.note-input{
+  width:100%; margin-top:4px; box-sizing:border-box; font-family:inherit; font-size:1rem; line-height:1.5;
+  color:var(--cream); background:var(--card); border:1.5px solid var(--line); border-radius:16px;
+  padding:14px 16px; outline:none; resize:vertical; min-height:96px;
+}
+.note-input:focus{border-color:var(--coral);}
+.note-input::placeholder{color:var(--muted);}
+.confirm{text-align:center; color:var(--cream); line-height:1.55; font-size:1.02rem; margin:4px auto 0; max-width:330px;}
+.cal-btn{display:block; margin:22px auto 0; background:transparent; border:1.5px solid var(--gold); color:var(--gold);
+  border-radius:999px; padding:12px 26px; font-family:inherit; font-weight:700; font-size:1rem; cursor:pointer;
+  transition:transform .15s, background .2s;}
+.cal-btn:active{transform:scale(.97);}
+.cal-btn.done{color:var(--cream); border-color:var(--line);}
 
 .next{
   display:block; width:100%; margin-top:26px; font-family:'Nunito',sans-serif; font-weight:800;
@@ -168,7 +182,7 @@ const CONFIG = {
     <p class="eyebrow">Mám na tebe otázku</p>
     <h1>Půjdeš&nbsp;se mnou na <em>rande?</em></h1>
     <div class="q-area" id="qArea">
-      <button class="btn-yes" id="btnYes">Ano 💛</button>
+      <button class="btn-yes" id="btnYes">Ano 🩷</button>
       <button class="btn-no" id="btnNo">Ne</button>
     </div>
   </section>
@@ -193,18 +207,27 @@ const CONFIG = {
     <p class="sub">Klidně vyber, na co máš zrovna chuť.</p>
     <div class="grid-places" id="places"></div>
     <input type="text" id="otherInput" class="other-input" placeholder="Napiš, kam bys chtěla jít…" maxlength="60" style="display:none;">
-    <button class="next" id="finish" disabled>Hotovo 💌</button>
+    <button class="next" id="toNote" disabled>Pokračovat</button>
     <button class="back" id="backToDays">← zpět na výběr dne</button>
+  </section>
+
+  <!-- STEP 3.5 -->
+  <section class="step" id="s35">
+    <p class="eyebrow">Poslední krok</p>
+    <h1>Chceš něco <em>připsat?</em></h1>
+    <p class="sub">Nepovinné — třeba vzkaz nebo přání. Klidně nech prázdné.</p>
+    <textarea id="noteInput" class="note-input" placeholder="Tvůj vzkaz (nepovinné)…" maxlength="300" rows="4"></textarea>
+    <button class="next" id="finish">Odeslat 💌</button>
+    <button class="back" id="backToPlaces">← zpět na výběr podniku</button>
   </section>
 
   <!-- STEP 4 -->
   <section class="step" id="s4">
-    <div class="heart-big">💛</div>
+    <div class="heart-big">🩷</div>
     <h1 style="margin-top:10px;">Těším se na <em>tebe</em></h1>
     <div class="ticket" id="ticket"></div>
+    <button class="cal-btn" id="calBtn">📅 Přidat do kalendáře</button>
     <p class="sign">— Zbyněk</p>
-    <button class="copy-btn" id="copyBtn">Zkopírovat výběr</button>
-    <p class="status" id="status"></p>
   </section>
 
 </div>
@@ -212,31 +235,30 @@ const CONFIG = {
 <script>
 /* ---------- data ---------- */
 const days = [
-  {key:'Neděle 21. 6.', dow:'Neděle', dt:'21. 6.', weekend:true},
-  {key:'Pondělí 22. 6.', dow:'Pondělí', dt:'22. 6.', weekend:false},
-  {key:'Úterý 23. 6.',  dow:'Úterý',  dt:'23. 6.', weekend:false},
-  {key:'Středa 24. 6.', dow:'Středa', dt:'24. 6.', weekend:false},
-  {key:'Čtvrtek 25. 6.',dow:'Čtvrtek',dt:'25. 6.', weekend:false},
-  {key:'Pátek 26. 6.',  dow:'Pátek',  dt:'26. 6.', weekend:false},
-  {key:'Sobota 27. 6.', dow:'Sobota', dt:'27. 6.', weekend:true},
-  {key:'Neděle 28. 6.', dow:'Neděle', dt:'28. 6.', weekend:true},
+  {key:'Neděle 21. 6.', dow:'Neděle', dt:'21. 6.', weekend:true,  iso:'2026-06-21'},
+  {key:'Pondělí 22. 6.', dow:'Pondělí', dt:'22. 6.', weekend:false, iso:'2026-06-22'},
+  {key:'Úterý 23. 6.',  dow:'Úterý',  dt:'23. 6.', weekend:false, iso:'2026-06-23'},
+  {key:'Středa 24. 6.', dow:'Středa', dt:'24. 6.', weekend:false, iso:'2026-06-24'},
+  {key:'Čtvrtek 25. 6.',dow:'Čtvrtek',dt:'25. 6.', weekend:false, iso:'2026-06-25'},
+  {key:'Pátek 26. 6.',  dow:'Pátek',  dt:'26. 6.', weekend:false, iso:'2026-06-26'},
+  {key:'Sobota 27. 6.', dow:'Sobota', dt:'27. 6.', weekend:true,  iso:'2026-06-27'},
+  {key:'Neděle 28. 6.', dow:'Neděle', dt:'28. 6.', weekend:true,  iso:'2026-06-28'},
 ];
 const places = [
   {label:'Kafe', em:'☕'},
   {label:'Víno / pivo', em:'🍷'},
-  {label:'Sushi', em:'🍣'},
-  {label:'Pizza', em:'🍕'},
   {label:'Vietnamská', em:'🍜'},
   {label:'Burger', em:'🍔'},
   {label:'Italská restaurace', em:'🍝'},
+  {label:'Zmrzlina', em:'🍦'},
   {label:'Jiné', em:'✨', other:true},
 ];
-const choice = {day:null, time:null, place:null};
+const choice = {day:null, time:null, place:null, note:'', iso:null};
 
 /* ---------- ambient hearts ---------- */
 (function(){
   const amb = document.getElementById('amb');
-  const icons = ['💛','🤍','💌','✨','🌙'];
+  const icons = ['🩷','🤍','🌹','🌷','💌','✨'];
   for(let i=0;i<14;i++){
     const s = document.createElement('span');
     s.textContent = icons[Math.floor(Math.random()*icons.length)];
@@ -259,33 +281,34 @@ function goTo(id){
 const btnNo = document.getElementById('btnNo');
 const btnYes = document.getElementById('btnYes');
 let dodgeCount = 0;
-const noScales = [0.7, 0.45];   // zmenšení Ne při 1. a 2. pokusu
-const yesScales = [1.25, 1.55, 1.9]; // zvětšení Ano
+const MAX_DODGES = 5;                            // Ne uteče 5×
+const noScales  = [0.82, 0.66, 0.52, 0.4, 0.3];  // postupné zmenšení Ne
+const yesScales = [1.5, 2.0, 2.5, 3.0, 3.6];  // cílové zvětšení Ano (omezí se na šířku obrazovky)
 
 function dodge(e){
   if(e){ e.preventDefault(); }
-  if(dodgeCount >= 3) return;
+  if(!btnNo.isConnected) return;
 
-  // Ano se vždy zvětší
-  btnYes.style.transform = 'scale(' + yesScales[Math.min(dodgeCount, yesScales.length-1)] + ')';
-  dodgeCount++;
-
-  if(dodgeCount >= 3){
-    // po třetím pokusu Ne zmizí — zůstane jen otázka a velké Ano
+  if(dodgeCount >= MAX_DODGES){
+    // po 5 útěcích Ne zmizí — zůstane jen otázka a velké Ano
     btnNo.style.transform = 'scale(0)';
     btnNo.style.opacity = '0';
     setTimeout(()=>{ btnNo.remove(); }, 350);
     return;
   }
 
-  // jinak uteč na náhodné místo a zmenši se
+  // Ano povyroste (max tak, aby se vešlo na šířku obrazovky) a Ne uteče
+  const maxFit = (window.innerWidth - 28) / btnYes.offsetWidth;
+  const yScale = Math.min(yesScales[dodgeCount], maxFit);
+  btnYes.style.transform = 'scale(' + yScale + ')';
   btnNo.classList.add('loose');
   const bw = btnNo.offsetWidth, bh = btnNo.offsetHeight;
   const maxX = Math.max(8, window.innerWidth  - bw - 16);
   const maxY = Math.max(8, window.innerHeight - bh - 16);
   btnNo.style.left = (Math.random()*maxX) + 'px';
   btnNo.style.top  = (Math.random()*maxY) + 'px';
-  btnNo.style.transform = 'scale(' + noScales[dodgeCount-1] + ')';
+  btnNo.style.transform = 'scale(' + noScales[dodgeCount] + ')';
+  dodgeCount++;
 }
 btnNo.addEventListener('mouseenter', dodge);
 btnNo.addEventListener('touchstart', dodge, {passive:false});
@@ -307,7 +330,7 @@ days.forEach(d=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.day').forEach(x=>x.classList.remove('sel'));
     b.classList.add('sel');
-    choice.day = d.key; choice.time = null;
+    choice.day = d.key; choice.iso = d.iso; choice.time = null;
     renderTimes(d.weekend);
     timePanel.style.display='block';
     toPlaces.disabled = true;
@@ -335,11 +358,13 @@ toPlaces.addEventListener('click', ()=> goTo('s3'));
 
 /* ---------- STEP 3: places ---------- */
 const placesEl = document.getElementById('places');
+const placeNextBtn = document.getElementById('toNote');
 const finishBtn = document.getElementById('finish');
 const otherInput = document.getElementById('otherInput');
+const noteInput = document.getElementById('noteInput');
 places.forEach(p=>{
   const b = document.createElement('button');
-  b.className='place';
+  b.className = p.other ? 'place wide' : 'place';
   b.innerHTML = `<span class="em">${p.em}</span><span class="nm">${p.label}</span>`;
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.place').forEach(x=>x.classList.remove('sel'));
@@ -348,88 +373,120 @@ places.forEach(p=>{
       otherInput.style.display = 'block';
       otherInput.value = '';
       choice.place = '';
-      finishBtn.disabled = true;
+      placeNextBtn.disabled = true;
       otherInput.focus();
     } else {
       otherInput.style.display = 'none';
       choice.place = p.label;
-      finishBtn.disabled = false;
+      placeNextBtn.disabled = false;
     }
   });
   placesEl.appendChild(b);
 });
 otherInput.addEventListener('input', ()=>{
   choice.place = otherInput.value.trim();
-  finishBtn.disabled = choice.place.length === 0;
+  placeNextBtn.disabled = choice.place.length === 0;
 });
 document.getElementById('backToDays').addEventListener('click', ()=> goTo('s2'));
+placeNextBtn.addEventListener('click', ()=> goTo('s35'));
+document.getElementById('backToPlaces').addEventListener('click', ()=> goTo('s3'));
 finishBtn.addEventListener('click', finish);
 
 /* ---------- STEP 4: summary + send ---------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
 function finish(){
+  choice.note = (noteInput.value || '').trim();
+  const noteRow = choice.note
+    ? `<div class="row"><span class="k">Vzkaz</span><span class="v">${escapeHtml(choice.note)}</span></div>` : '';
   document.getElementById('ticket').innerHTML = `
     <div class="row"><span class="k">Kdy</span><span class="v">${choice.day}</span></div>
     <div class="row"><span class="k">V kolik</span><span class="v">${choice.time}</span></div>
-    <div class="row"><span class="k">Kam</span><span class="v">${choice.place}</span></div>`;
+    <div class="row"><span class="k">Kam</span><span class="v">${escapeHtml(choice.place)}</span></div>` + noteRow;
   goTo('s4');
   burst();
   sendChoice();
 }
 
 function summaryText(){
-  return `Nikola řekla ANO! 🎉\nKdy: ${choice.day}\nV kolik: ${choice.time}\nKam: ${choice.place}`;
+  let t = `Nikola řekla ANO! 🎉\nKdy: ${choice.day}\nV kolik: ${choice.time}\nKam: ${choice.place}`;
+  if(choice.note) t += `\nVzkaz: ${choice.note}`;
+  return t;
 }
 
 async function sendChoice(){
-  const status = document.getElementById('status');
   try{
     if(CONFIG.DELIVERY === 'formsubmit' && CONFIG.EMAIL){
       await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(CONFIG.EMAIL),{
         method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
         body: JSON.stringify({
-          _subject: 'Nikola řekla ANO 💛',
+          _subject: 'Nikola řekla ANO 🩷',
           _template: 'box',
           Kdy: choice.day, V_kolik: choice.time, Kam: choice.place,
+          Vzkaz: choice.note || '(žádný)',
           message: summaryText()
         })
       });
-      status.textContent = 'Odesláno ✓';
     } else if(CONFIG.DELIVERY === 'web3forms' && CONFIG.WEB3FORMS_KEY){
       await fetch('https://api.web3forms.com/submit',{
         method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
         body: JSON.stringify({
           access_key: CONFIG.WEB3FORMS_KEY,
-          subject: 'Nikola řekla ANO 💛',
+          subject: 'Nikola řekla ANO 🩷',
           from_name: CONFIG.FROM_NAME,
           den: choice.day, cas: choice.time, kam: choice.place,
           message: summaryText()
         })
       });
-      status.textContent = 'Odesláno ✓';
     } else if(CONFIG.DELIVERY === 'appsscript' && CONFIG.APPSSCRIPT_URL){
       const fd = new FormData();
       fd.append('den', choice.day); fd.append('cas', choice.time); fd.append('kam', choice.place);
       fd.append('message', summaryText());
       await fetch(CONFIG.APPSSCRIPT_URL, {method:'POST', mode:'no-cors', body:fd});
-      status.textContent = 'Odesláno ✓';
-    } else {
-      status.textContent = '';
     }
   }catch(err){
-    status.textContent = 'Odeslání se nepovedlo — klidně použij tlačítko Zkopírovat výběr.';
+    /* výběr se odesílá na pozadí; případné chyby tiše ignorujeme */
   }
 }
 
-document.getElementById('copyBtn').addEventListener('click', async ()=>{
-  const t = summaryText();
-  try{ await navigator.clipboard.writeText(t); document.getElementById('status').textContent='Zkopírováno do schránky ✓'; }
-  catch(e){ document.getElementById('status').textContent = t; }
+/* ---------- add to calendar (.ics) ---------- */
+function pad(n){ return String(n).padStart(2,'0'); }
+function buildICS(){
+  if(!choice.iso || !choice.time) return null;
+  const h = parseInt(choice.time, 10);
+  const d = choice.iso.replace(/-/g, '');
+  const start = d + 'T' + pad(h) + '0000';
+  const end   = d + 'T' + pad(Math.min(h + 2, 23)) + '0000';
+  const place = (choice.place || '').replace(/[,;\\\n]/g, ' ');
+  return [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pozvanka//CS','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    'UID:rande-' + Date.now() + '@pozvanka',
+    'DTSTART:' + start,
+    'DTEND:' + end,
+    'SUMMARY:Rande se Zbyňkem',
+    'LOCATION:' + place,
+    'DESCRIPTION:Rande' + (place ? ' — ' + place : ''),
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+}
+document.getElementById('calBtn').addEventListener('click', ()=>{
+  const ics = buildICS();
+  if(!ics) return;
+  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rande.ics';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+  const btn = document.getElementById('calBtn');
+  btn.textContent = '📅 Staženo – otevři soubor'; btn.classList.add('done');
 });
 
 /* ---------- final heart burst ---------- */
 function burst(){
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const icons=['💛','🤍','✨','💌'];
+  const icons=['🩷','🤍','🌹','🌷','✨','💌'];
   for(let i=0;i<24;i++){
     const s=document.createElement('span');
     s.textContent=icons[Math.floor(Math.random()*icons.length)];
