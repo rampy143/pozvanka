@@ -234,16 +234,22 @@ const CONFIG = {
 
 <script>
 /* ---------- data ---------- */
-const days = [
-  {key:'Neděle 21. 6.', dow:'Neděle', dt:'21. 6.', weekend:true,  iso:'2026-06-21'},
-  {key:'Pondělí 22. 6.', dow:'Pondělí', dt:'22. 6.', weekend:false, iso:'2026-06-22'},
-  {key:'Úterý 23. 6.',  dow:'Úterý',  dt:'23. 6.', weekend:false, iso:'2026-06-23'},
-  {key:'Středa 24. 6.', dow:'Středa', dt:'24. 6.', weekend:false, iso:'2026-06-24'},
-  {key:'Čtvrtek 25. 6.',dow:'Čtvrtek',dt:'25. 6.', weekend:false, iso:'2026-06-25'},
-  {key:'Pátek 26. 6.',  dow:'Pátek',  dt:'26. 6.', weekend:false, iso:'2026-06-26'},
-  {key:'Sobota 27. 6.', dow:'Sobota', dt:'27. 6.', weekend:true,  iso:'2026-06-27'},
-  {key:'Neděle 28. 6.', dow:'Neděle', dt:'28. 6.', weekend:true,  iso:'2026-06-28'},
-];
+const DAYS_COUNT = 8; // zítřek + dalších 7 dní
+function buildDays(count){
+  const dows = ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
+  const arr = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  for(let i=1; i<=count; i++){
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    const dow = dows[d.getDay()];
+    const dt  = d.getDate() + '. ' + (d.getMonth()+1) + '.';
+    const weekend = (d.getDay() === 0 || d.getDay() === 6);
+    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    arr.push({ key: dow + ' ' + dt, dow, dt, weekend, iso });
+  }
+  return arr;
+}
+const days = buildDays(DAYS_COUNT);
 const places = [
   {label:'Kafe', em:'☕'},
   {label:'Víno / pivo', em:'🍷'},
